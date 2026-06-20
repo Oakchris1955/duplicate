@@ -50,7 +50,7 @@ runs:
       shell: bash
     - run: echo "::group::Test All Features"
       shell: bash
-    - run: "cargo test --no-default-features --features pretty_errors,module_disambiguation ${{ inputs.additional-arguments }}"
+    - run: "cargo test --no-default-features --features pretty_errors,module_disambiguation,no_std ${{ inputs.additional-arguments }}"
       shell: bash
     - run: echo "::group::Test Documentation Code"
       shell: bash

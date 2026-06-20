@@ -11,7 +11,10 @@ use crate::{
 	DuplicationDefinition, Result, SubstitutionGroup,
 };
 use proc_macro::{Delimiter, Ident, Span, TokenStream, TokenTree};
+#[cfg(not(feature = "no_std"))]
 use std::collections::HashSet;
+#[cfg(feature = "no_std")]
+use hashbrown::HashSet;
 
 /// Parses all global substitutions, returning them.
 ///
@@ -19,7 +22,7 @@ use std::collections::HashSet;
 pub(crate) fn parse_global_substitutions_only(attr: TokenStream) -> Result<SubstitutionGroup>
 {
 	let empty_global = SubstitutionGroup::new();
-	let mut iter = TokenIter::new(attr, &empty_global, std::iter::empty());
+	let mut iter = TokenIter::new(attr, &empty_global, core::iter::empty());
 	let global_substitutions = validate_global_substitutions(&mut iter)?;
 
 	if let Ok(None) = iter.peek()
@@ -70,7 +73,7 @@ pub(crate) fn parse_global_substitutions_only(attr: TokenStream) -> Result<Subst
 pub(crate) fn parse_duplicate_invocation(attr: TokenStream) -> Result<DuplicationDefinition>
 {
 	let empty_global = SubstitutionGroup::new();
-	let mut iter = TokenIter::new(attr, &empty_global, std::iter::empty());
+	let mut iter = TokenIter::new(attr, &empty_global, core::iter::empty());
 	let global_substitutions = validate_global_substitutions(&mut iter)?;
 
 	if let (Ok(None), false) = (iter.peek(), global_substitutions.substitutions.is_empty())
@@ -102,7 +105,7 @@ pub(crate) fn parse_duplicate_invocation(attr: TokenStream) -> Result<Duplicatio
 			{
 				let substitution = Substitution::new(
 					&args,
-					TokenIter::new(sub, &SubstitutionGroup::new(), std::iter::empty()),
+					TokenIter::new(sub, &SubstitutionGroup::new(), core::iter::empty()),
 				);
 				if let Ok(substitution) = substitution
 				{
@@ -327,6 +330,10 @@ fn extract_verbose_substitutions<'a, T: SubGroupIter<'a>>(
 			.span(iter_span)
 			.hint(hint));
 	}
+
+	// https://users.rust-lang.org/t/why-does-using-hashbrowns-hashset-cause-a-lifetime-issue-but-stds-hashset-does-not/133728
+	#[cfg(feature = "no_std")]
+	drop(found_idents);
 
 	Ok(substitutions)
 }

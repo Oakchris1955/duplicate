@@ -1,10 +1,11 @@
 use crate::{error::Error, invoke_nested, new_group, Result, SubstitutionGroup};
 use proc_macro::{token_stream::IntoIter, Delimiter, Ident, Spacing, Span, TokenStream, TokenTree};
-use std::{
-	collections::VecDeque,
+use core::{
 	fmt::{Debug, Formatter},
 	iter::{once, FromIterator},
 };
+extern crate alloc;
+use alloc::collections::VecDeque;
 
 /// Trait alias
 pub(crate) trait SubGroupIter<'a>: Iterator<Item = &'a SubstitutionGroup> + Clone {}
@@ -490,7 +491,7 @@ impl<'a, T: SubGroupIter<'a>> TokenIter<'a, T>
 }
 impl<'a, T: SubGroupIter<'a> + Debug> Debug for TokenIter<'a, T>
 {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result
+	fn fmt(&self, f: &mut Formatter<'_>) -> core::fmt::Result
 	{
 		f.write_str("TokenIter{")?;
 		self.raw_tokens.clone().collect::<Vec<_>>().fmt(f)?;

@@ -702,6 +702,16 @@
 //! to keep this feature off (note that it's enabled by default)
 //! to avoid forcing it on users.
 //!
+//! ### `no_std`
+//! __Compile support for `no_std` targets
+//!
+//! Remove any dependencies on the standard library, allowing this crate
+//! to be compiled and used in a `no_std` environment
+//!
+//! Please note that in order to replace the standard library's HashSet, when
+//! this feature is enabled, we rely on [`hashbrown`](https://crates.io/crates/hashbrown)'s
+//! HashSet (which is the same implementation in both cases, just with a different hasher)
+//!
 //! # Disclaimer
 //!
 //! This crate does not try to justify or condone the usage of code duplication
@@ -731,7 +741,11 @@ use crate::{
 };
 use parse::*;
 use proc_macro::{Delimiter, Group, Ident, Span, TokenStream};
-use std::{collections::HashMap, iter::empty};
+#[cfg(not(feature = "no_std"))]
+use std::collections::HashMap;
+#[cfg(feature = "no_std")]
+use hashbrown::HashMap;
+use core::iter::empty;
 use substitute::*;
 
 /// Duplicates the item and substitutes specific identifiers for different code
@@ -1193,7 +1207,7 @@ pub fn substitute(stream: TokenStream) -> TokenStream
 
 /// A result that specified where in the token stream the error occured
 /// and is accompanied by a message.
-type Result<T> = std::result::Result<T, Error>;
+type Result<T> = core::result::Result<T, Error>;
 
 /// Parses an inline macro invocation where the invocation syntax is within
 /// initial brackets.
@@ -1378,7 +1392,7 @@ pub(crate) fn disambiguate_module<'a>(
 fn get_module_name(item: &TokenStream) -> Option<Ident>
 {
 	let empty_globals = SubstitutionGroup::new();
-	let mut iter = TokenIter::new(item.clone(), &empty_globals, std::iter::empty());
+	let mut iter = TokenIter::new(item.clone(), &empty_globals, core::iter::empty());
 
 	iter.expect_simple(|t| is_ident(t, Some("mod")), None)
 		.ok()?;

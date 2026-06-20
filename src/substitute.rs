@@ -5,6 +5,10 @@ use crate::{
 	SubstitutionGroup, Token, TokenIter,
 };
 use proc_macro::{Delimiter, Ident, Span, TokenStream, TokenTree};
+#[cfg(not(feature = "no_std"))]
+use std::collections::HashSet;
+#[cfg(feature = "no_std")]
+use hashbrown::HashSet;
 
 /// The types of sub-substitutions composing a single substitution.
 #[derive(Debug)]
@@ -199,7 +203,7 @@ pub(crate) fn duplicate_and_substitute<'a>(
 	{
 		if let Some((mod_ident, sub_ident)) = &mod_and_postfix_sub
 		{
-			let mut subs = std::collections::HashSet::new();
+			let mut subs = HashSet::new();
 			for sub in sub_groups.clone()
 			{
 				if !subs.insert(
